@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block seccion %}Equipos{% endblock %}
+
+{% block contenido %}
+<div class="mb-3 flex items-center justify-between">
+  <span class="rotulo">ESP32 en la red</span>
+  <button type="button" id="btn-nuevo" class="btn btn-primario">Agregar</button>
+</div>
+
+<div id="lista" class="space-y-2"></div>
+
+<form id="form" class="tarjeta mt-3 hidden space-y-3 p-4">
+  <input type="hidden" id="f-id" />
+  <div>
+    <label class="rotulo" for="f-nombre">Nombre</label>
+    <input class="campo mt-1" id="f-nombre" required maxlength="80" placeholder="Persiana de la sala" />
+  </div>
+  <div>
+    <label class="rotulo" for="f-ip">Direccion en la red</label>
+    <input class="campo dato mt-1" id="f-ip" required placeholder="192.168.1.50" />
+    <p class="mt-1 text-xs text-tenue">
+      La IP del ESP32. Se acepta <span class="dato">192.168.1.50</span> o
+      <span class="dato">192.168.1.50:8080</span> si el firmware usa otro puerto.
+    </p>
+  </div>
+  <div class="flex gap-2">
+    <button type="button" id="btn-cancelar" class="btn">Cancelar</button>
+    <button type="submit" class="btn btn-primario flex-1">Guardar equipo</button>
+  </div>
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/dispositivos.js') }}"></script>
+{% endblock %}

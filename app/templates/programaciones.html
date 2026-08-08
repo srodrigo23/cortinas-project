@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+{% block seccion %}Horarios{% endblock %}
+
+{% block contenido %}
+{% if not dispositivos %}
+  <div class="tarjeta p-6 text-center">
+    <p class="font-semibold">Primero carga un equipo.</p>
+    <a class="btn btn-primario mt-4" href="{{ url_for('paginas.dispositivos') }}">Agregar equipo</a>
+  </div>
+{% else %}
+
+  {% if dispositivos|length > 1 %}
+  <div class="mb-3 -mx-4 overflow-x-auto px-4">
+    <div id="selector-equipo" class="flex gap-2" role="tablist" aria-label="Equipos">
+      {% for d in dispositivos %}
+      <button type="button" class="pastilla shrink-0" role="tab"
+              data-id="{{ d.id }}" aria-selected="false">{{ d.nombre }}</button>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="mb-3 flex items-center justify-between">
+    <span class="rotulo">Reglas</span>
+    <button type="button" id="btn-nueva" class="btn btn-primario">Nueva regla</button>
+  </div>
+
+  <!-- Aviso de solapamiento: dos reglas que caen a menos de 5 minutos. No
+       bloquea nada, avisa. -->
+  <div id="solapamientos" class="mb-3 hidden rounded-lg border border-sol/50 bg-sol/10 px-3 py-2 text-sm"></div>
+
+  <div id="lista" class="space-y-2"></div>
+
+  <!-- ------------------------------------------------------------------
+       Formulario de alta y edicion. Vive oculto en la pagina y se abre en
+       una capa: evita una navegacion completa desde el celular.
+       ------------------------------------------------------------------ -->
+  <div id="capa" class="fixed inset-0 z-40 hidden bg-tinta/50 p-0 sm:p-4">
+    <div class="mx-auto flex h-full max-w-lg flex-col bg-carta sm:h-auto sm:max-h-full sm:rounded-xl">
+      <div class="flex items-center justify-between border-b border-linea px-4 py-3">
+        <h2 id="titulo-form" class="text-lg font-bold">Nueva regla</h2>
+        <button type="button" id="btn-cerrar" class="btn" aria-label="Cerrar">Cancelar</button>
+      </div>
+
+      <form id="form" class="flex-1 space-y-4 overflow-y-auto p-4">
+        <input type="hidden" id="f-id" />
+
+        <div>
+          <label class="rotulo" for="f-nombre">Nombre</label>
+          <input class="campo mt-1" id="f-nombre" required maxlength="120"
+                 placeholder="Bajar al atardecer" />
+        </div>
+
+        <div>
+          <label class="rotulo" for="f-accion">Accion</label>
+          <select class="campo mt-1" id="f-accion">
+            {% for a in acciones %}
+            <option value="{{ a.value }}">{{ a.etiqueta }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <fieldset>
+          <legend class="rotulo">Cuando</legend>
+          <div class="mt-1 grid grid-cols-2 gap-2">
+            <label class="btn cursor-pointer has-[:checked]:bg-tinta has-[:checked]:text-carta has-[:checked]:border-tinta">
+              <input type="radio" name="tipo_hora" value="fija" class="sr-only" checked />
+              Hora fija
+            </label>
+            <label class="btn cursor-pointer has-[:checked]:bg-tinta has-[:checked]:text-carta has-[:checked]:border-tinta">
+              <input type="radio" name="tipo_hora" value="solar" class="sr-only" />
+              Evento solar
+            </label>
+          </div>
+        </fieldset>
+
+        <div id="bloque-fija">
+          <label class="rotulo" for="f-hora">Hora</label>
+          <input class="campo dato mt-1" id="f-hora" type="time" value="07:00" />
+        </div>
+
+        <div id="bloque-solar" class="hidden space-y-4">
+          <div>
+            <label class="rotulo" for="f-evento">Evento</label>
+            <select class="campo mt-1" id="f-evento">
+              {% for e in eventos %}
+              <option value="{{ e.value }}">{{ e.etiqueta }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div>
+            <label class="rotulo" for="f-offset">Desfase en minutos</label>
+            <input class="campo dato mt-1" id="f-offset" type="number" value="0"
+                   min="-180" max="180" step="5" />
+            <p class="mt-1 text-xs text-tenue">
+              Negativo para adelantarse al evento: <span class="dato">-15</span> son
+              quince minutos antes.
+            </p>
+          </div>
+        </div>
+
+        <fieldset>
+          <legend class="rotulo">Dias</legend>
+          <div id="f-dias" class="mt-1 flex flex-wrap gap-1.5">
+            {% for d in dias %}
+            <button type="button" class="dia" data-indice="{{ loop.index0 }}"
+                    aria-pressed="true">{{ d }}</button>
+            {% endfor %}
+          </div>
+          <div class="mt-2 flex gap-2">
+            <button type="button" class="pastilla" data-atajo="1111111">Todos</button>
+            <button type="button" class="pastilla" data-atajo="1111100">Lun a vie</button>
+            <button type="button" class="pastilla" data-atajo="0000011">Fin de semana</button>
+          </div>
+        </fieldset>
+
+        <label class="flex items-center gap-2">
+          <input type="checkbox" id="f-activa" class="h-5 w-5" checked />
+          <span class="text-sm font-medium">Regla activa</span>
+        </label>
+      </form>
+
+      <div class="flex gap-2 border-t border-linea p-4">
+        <button type="button" id="btn-borrar" class="btn hidden text-falla">Eliminar</button>
+        <button type="submit" form="form" id="btn-guardar" class="btn btn-primario flex-1">Guardar regla</button>
+      </div>
+    </div>
+  </div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+  window.EQUIPOS = {{ equipos_json | tojson }};
+</script>
+<script src="{{ url_for('static', filename='js/programaciones.js') }}"></script>
+{% endblock %}

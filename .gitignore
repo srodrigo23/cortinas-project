@@ -1,0 +1,14 @@
+# El binario de Tailwind pesa 80 MB: se descarga con scripts/obtener_tailwind.sh
+bin/
+
+# El CSS generado SI se versiona: el dia de la demostracion el proyecto tiene
+# que arrancar sin el watcher corriendo. No agregar app/static/css/ aca.
+
+.env
+instance/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+.DS_Store
+.pytest_cache/

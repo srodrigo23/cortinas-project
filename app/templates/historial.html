@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block seccion %}Historial{% endblock %}
+
+{% block contenido %}
+<!-- Resumen: son las metricas de evaluacion del proyecto, por eso van
+     arriba y no al pie de la tabla. -->
+<div class="mb-3 grid grid-cols-3 gap-2">
+  <div class="tarjeta p-3">
+    <span class="rotulo">Comandos</span>
+    <p id="m-total" class="dato mt-1 text-2xl font-bold leading-none">--</p>
+  </div>
+  <div class="tarjeta p-3">
+    <span class="rotulo">Exito</span>
+    <p id="m-exito" class="dato mt-1 text-2xl font-bold leading-none">--</p>
+  </div>
+  <div class="tarjeta p-3">
+    <span class="rotulo">Latencia</span>
+    <p id="m-latencia" class="dato mt-1 text-2xl font-bold leading-none">--</p>
+  </div>
+</div>
+
+<div class="mb-3 flex items-center gap-2">
+  <label class="rotulo" for="filtro-equipo">Equipo</label>
+  <select class="campo flex-1" id="filtro-equipo">
+    <option value="">Todos</option>
+    {% for d in dispositivos %}
+    <option value="{{ d.id }}">{{ d.nombre }}</option>
+    {% endfor %}
+  </select>
+  <button type="button" id="btn-refrescar" class="btn">Actualizar</button>
+</div>
+
+<div id="lista" class="space-y-1.5"></div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/historial.js') }}"></script>
+{% endblock %}

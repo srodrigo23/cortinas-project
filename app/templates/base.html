@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>{% block titulo %}{{ titulo_app }}{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}" />
+    <link rel="icon" href="{{ url_for('static', filename='favicon.svg') }}" />
+    <meta name="theme-color" content="#eeede8" />
+  </head>
+  <body>
+    <header class="border-b border-linea bg-carta">
+      <div class="mx-auto flex max-w-3xl items-baseline justify-between px-4 py-3">
+        <span class="rotulo">Control de persiana</span>
+        <span class="rotulo">{% block seccion %}{% endblock %}</span>
+      </div>
+    </header>
+
+    <main class="mx-auto max-w-3xl px-4 py-4">
+      {% block contenido %}{% endblock %}
+    </main>
+
+    <!-- Navegacion fija abajo: se opera con el pulgar desde el celular. -->
+    <nav class="fixed inset-x-0 bottom-0 z-20 border-t border-linea bg-carta pb-[env(safe-area-inset-bottom)]">
+      <div class="mx-auto flex max-w-3xl">
+        <a class="nav-item" href="{{ url_for('paginas.panel') }}"
+           {% if activo == 'panel' %}aria-current="page"{% endif %}>Panel</a>
+        <a class="nav-item" href="{{ url_for('paginas.programaciones') }}"
+           {% if activo == 'programaciones' %}aria-current="page"{% endif %}>Horarios</a>
+        <a class="nav-item" href="{{ url_for('paginas.historial') }}"
+           {% if activo == 'historial' %}aria-current="page"{% endif %}>Historial</a>
+        <a class="nav-item" href="{{ url_for('paginas.dispositivos') }}"
+           {% if activo == 'dispositivos' %}aria-current="page"{% endif %}>Equipos</a>
+      </div>
+    </nav>
+
+    <!-- Avisos. aria-live para que un lector de pantalla los anuncie. -->
+    <div id="avisos" class="fixed inset-x-0 bottom-20 z-30 mx-auto max-w-3xl px-4"
+         role="status" aria-live="polite"></div>
+
+    <script src="{{ url_for('static', filename='js/comun.js') }}"></script>
+    {% block scripts %}{% endblock %}
+  </body>
+</html>

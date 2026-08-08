@@ -1,0 +1,23 @@
+[project]
+name = "proy-cortinas"
+version = "0.1.0"
+description = "Control web de una persiana roller motorizada via ESP32"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "astral>=3.2",
+    "flask>=3.1.3",
+    "honcho>=2.0.0",
+    "python-dotenv>=1.2.2",
+    "requests>=2.34.2",
+    "sqlalchemy>=2.0.51",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+    "responses>=0.26.2",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

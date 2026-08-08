@@ -1,0 +1,235 @@
+@import "tailwindcss";
+
+/* Tailwind v4 descubre las clases escaneando archivos. Se declaran las rutas
+   explicitamente para que no intente leer bin/tailwindcss (80 MB) ni la base
+   de datos. */
+@source "../../templates";
+@source "../js";
+
+/* --------------------------------------------------------------------------
+   Sistema de diseno: "instrumento de medicion"
+
+   La idea que ordena toda la interfaz es que este sistema NO mide nada: manda
+   ordenes a ciegas. Por eso la persiana se dibuja como un indicador graduado
+   -con regla de porcentajes al costado- y no como un dibujo bonito: un
+   indicador admite estado "desconocido"; una ilustracion, no.
+
+   Colores tomados del objeto real: la tela de la persiana, el aluminio del
+   tubo motor, la luz que la persiana regula.
+   -------------------------------------------------------------------------- */
+@theme {
+  --color-tinta: #1c1f26; /* texto */
+  --color-tenue: #6b7280; /* texto secundario */
+  --color-fondo: #eeede8; /* gris calido de papel */
+  --color-carta: #ffffff; /* superficies */
+  --color-linea: #d5d2c9; /* filetes */
+  --color-lino: #d9cbae; /* tela de la persiana */
+  --color-sol: #c98a00; /* luz: reglas solares, acentos */
+  --color-vivo: #2f7d5d; /* en linea, resultado ok */
+  --color-falla: #a3322a; /* sin respuesta, error */
+
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, "Roboto Mono", monospace;
+}
+
+/* --------------------------------------------------------------------------
+   Base
+   -------------------------------------------------------------------------- */
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    background-color: var(--color-fondo);
+    color: var(--color-tinta);
+    font-family: var(--font-sans);
+    /* Espacio para la barra de navegacion inferior fija en celular. */
+    padding-bottom: 5.5rem;
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-tinta);
+    outline-offset: 2px;
+  }
+  /* Todo dato numerico va en monoespaciada: latencias, horas, porcentajes.
+     Es la firma tipografica del sistema y hace comparables las columnas del
+     historial de un vistazo. */
+  .dato {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@layer components {
+  /* Rotulo estructural: mayusculas, muy espaciado. Encabeza cada seccion. */
+  .rotulo {
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-tenue);
+  }
+
+  .tarjeta {
+    background-color: var(--color-carta);
+    border: 1px solid var(--color-linea);
+    border-radius: 0.75rem;
+  }
+
+  /* --- Botones del control remoto ---------------------------------------
+     Alto minimo 4rem: se operan con el pulgar, de pie, junto a la ventana. */
+  .btn-control {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.125rem;
+    min-height: 4rem;
+    border: 1px solid var(--color-linea);
+    border-radius: 0.625rem;
+    background-color: var(--color-carta);
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--color-tinta);
+    box-shadow: 0 1px 0 var(--color-linea);
+    transition: transform 90ms ease, background-color 90ms ease;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+  .btn-control:active:not(:disabled) {
+    transform: translateY(1px);
+    background-color: var(--color-fondo);
+    box-shadow: none;
+  }
+  .btn-control:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+  /* El comando en vuelo: se marca el boton pulsado, no toda la fila. */
+  .btn-control[data-vuelo="1"] {
+    border-color: var(--color-sol);
+    box-shadow: inset 0 0 0 1px var(--color-sol);
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.375rem;
+    min-height: 2.75rem;
+    padding: 0 1rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--color-linea);
+    background-color: var(--color-carta);
+    font-weight: 600;
+    font-size: 0.9375rem;
+    touch-action: manipulation;
+  }
+  .btn-primario {
+    background-color: var(--color-tinta);
+    border-color: var(--color-tinta);
+    color: var(--color-carta);
+  }
+  .btn:disabled {
+    opacity: 0.5;
+  }
+
+  .campo {
+    width: 100%;
+    min-height: 2.75rem;
+    padding: 0 0.75rem;
+    border: 1px solid var(--color-linea);
+    border-radius: 0.5rem;
+    background-color: var(--color-carta);
+    font-size: 1rem; /* 16px evita el zoom automatico de iOS al enfocar */
+  }
+
+  /* --- Indicador de la persiana -----------------------------------------
+     La tela se dibuja con franjas horizontales muy tenues para que se lea
+     como tela enrollandose y no como una barra de progreso. */
+  .tela {
+    background-color: var(--color-lino);
+    background-image: repeating-linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 0.06) 0 1px,
+      transparent 1px 9px
+    );
+    /* Arranque lento y frenado suave: imita el arranque del motor tubular. */
+    transition: height 700ms cubic-bezier(0.45, 0.05, 0.25, 1);
+  }
+
+  /* Estado desconocido (pos = -1). Trama diagonal: el sistema declara que no
+     sabe donde esta la persiana en vez de dibujar una posicion inventada. */
+  .tela-incognita {
+    background-color: transparent;
+    background-image: repeating-linear-gradient(
+      45deg,
+      var(--color-linea) 0 2px,
+      transparent 2px 9px
+    );
+  }
+
+  .punto {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 9999px;
+    flex: none;
+  }
+
+  .pastilla {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.125rem 0.5rem;
+    border-radius: 9999px;
+    border: 1px solid var(--color-linea);
+    font-size: 0.75rem;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  /* Toggle de dia de la semana en el formulario de reglas. */
+  .dia {
+    min-width: 2.5rem;
+    min-height: 2.5rem;
+    border: 1px solid var(--color-linea);
+    border-radius: 0.5rem;
+    background-color: var(--color-carta);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--color-tenue);
+  }
+  .dia[aria-pressed="true"] {
+    background-color: var(--color-tinta);
+    border-color: var(--color-tinta);
+    color: var(--color-carta);
+  }
+
+  .nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.125rem;
+    flex: 1 1 0;
+    padding: 0.5rem 0;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: var(--color-tenue);
+  }
+  .nav-item[aria-current="page"] {
+    color: var(--color-tinta);
+    box-shadow: inset 0 2px 0 var(--color-tinta);
+  }
+}
+
+/* Accesibilidad: quien pidio menos movimiento no recibe la animacion del
+   motor ni ninguna otra transicion. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
