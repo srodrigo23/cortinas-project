@@ -1,0 +1,7 @@
+# Finales de linea LF en el repositorio aunque se clone en Windows. Evita
+# diffs enteros por CRLF y que un script con CRLF falle al ejecutarse.
+* text=auto eol=lf
+
+*.png binary
+*.ico binary
+*.db binary

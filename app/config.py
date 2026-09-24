@@ -46,6 +46,8 @@ class Config:
 
     # --- Flask / base de datos -------------------------------------------
     SECRET_KEY = os.environ.get("SECRET_KEY", "cambiame-en-produccion")
+    # as_posix(): en Windows la ruta sale con barras invertidas
+    # (C:\...\cortinas.db) y la URL de SQLAlchemy espera barras normales.
     DATABASE_URL = os.environ.get(
-        "DATABASE_URL", f"sqlite:///{RAIZ / 'instance' / 'cortinas.db'}"
+        "DATABASE_URL", f"sqlite:///{(RAIZ / 'instance' / 'cortinas.db').as_posix()}"
     )

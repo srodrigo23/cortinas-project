@@ -54,10 +54,18 @@ Requisitos: [uv](https://docs.astral.sh/uv/) y Python 3.12 (uv lo instala solo).
 git clone <este-repositorio>
 cd proy-cortinas
 
-uv sync                        # dependencias
-./scripts/obtener_tailwind.sh  # binario de Tailwind (80 MB, no versionado)
-cp .env.example .env           # configuracion
+uv sync                                      # dependencias
+uv run python scripts/tailwind.py obtener    # binario de Tailwind (80 MB, no versionado)
+cp .env.example .env                         # configuracion
 ```
+
+Los mismos comandos sirven en Windows, macOS y Linux. En Windows, el unico
+cambio es copiar el `.env` con `copy .env.example .env` (cmd) o
+`Copy-Item .env.example .env` (PowerShell). Ver
+[Notas para Windows](#notas-para-windows).
+
+La base de datos (`instance/cortinas.db`) no se versiona: la carpeta y el
+archivo se crean solos al arrancar la aplicacion por primera vez.
 
 El binario de Tailwind no se versiona por su tamano, pero **el CSS generado
 si** (`app/static/css/app.css`): el dia de la demostracion la aplicacion tiene
@@ -115,11 +123,27 @@ uv run python scripts/simular_esp32.py --fallas 0.25
 ### Demostracion
 
 ```bash
-./scripts/construir_css.sh                                   # una sola vez
+uv run python scripts/tailwind.py construir                  # una sola vez
 uv run flask --app app run --host 0.0.0.0 --port 5000
 ```
 
 Sin watcher y sin honcho. El CSS minificado ya esta en el repositorio.
+
+### Notas para Windows
+
+- **Base de datos.** Se crea sola en `instance/cortinas.db`. Si se define
+  `DATABASE_URL` a mano, usar barras normales:
+  `sqlite:///C:/ruta/al/proyecto/instance/cortinas.db`.
+- **Zona horaria.** Windows no trae la base de zonas IANA que usa `zoneinfo`;
+  `uv sync` instala el paquete `tzdata` solo en Windows para cubrirlo.
+- **Tailwind.** `scripts/tailwind.py` descarga `bin/tailwindcss.exe` y el
+  `Procfile` ya lo usa; no hace falta bash ni curl.
+- **Firewall.** La primera vez que Flask escuche en `0.0.0.0`, Windows pregunta
+  si permitir Python en redes privadas. Hay que aceptarlo para entrar desde el
+  celular.
+- **`TZ` en el `.env`.** El runtime de C de Windows no entiende nombres como
+  `America/La_Paz` y puede mostrar las horas de los logs en UTC. No afecta a la
+  aplicacion, que siempre calcula con la zona de `TZ` a traves de `zoneinfo`.
 
 ### Pruebas
 
